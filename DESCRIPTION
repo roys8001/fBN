@@ -3,8 +3,8 @@ Type: Package
 Title: What the package does (short line)
 Version: 1.0
 Date: 2021-11-17
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Author: person("Saptarshi", "Roy",email = "roys8001@stat.tamu.edu",role =c("aut", "cre"))
+Maintainer: Saptarshi Roy <roys8001@stat.tamu.edu>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Imports: Rcpp (>= 1.0.7)
