@@ -34,3 +34,49 @@ get_sinfo = function(time, nknots) {
 
   list(lknot = lknot, uknot = uknot, iknot = iknot, sbasis = sbasis, penat = penat)
 }
+
+### Function to generate initial baseline coefficients
+
+get_initial_zcoef = function(xobs, zobs, sbasis, svar, fscore, fpc, time) {
+  utime = sort(unique(time)); numc = length(svar); numk = ncol(fscore) / numc; nums = ncol(sbasis); numz = ncol(zobs); numx = nrow(xobs)
+  # get position of nodes
+  cindex = c(1, which(time[-1] < time[-length(time)]) + 1, length(time) + 1); findex = seq(1, numc * numk + numc, by = numk)
+  # initialize smoothness parameter
+  eta = matrix(1e-8, numc, numz)
+
+  zcoef = matrix(0, numc, numz * nums)
+  # recursively sample for each node
+  for(j in 1 : numc) {
+    # match position for the current node
+    cposition = cindex[j] : (cindex[j + 1] - 1); tposition = match(time[cposition], utime); fposition = findex[j] : (findex[j + 1] - 1)
+
+    bsum = Bsum = 0
+    for(i in 1 : numx) {
+      nposition = which(!is.na(xobs[i, cposition])); ncposition = cposition[nposition]; ntposition = tposition[nposition]
+      # remove the effect of principal components
+      yobs = xobs[i, ncposition, drop = FALSE] - tcrossprod(fscore[i, fposition], fpc[[j]][nposition, , drop = FALSE])
+      # sum the contribution of mean
+      bsum = bsum + tcrossprod(yobs, kronecker(zobs[i, ], t(sbasis[ntposition, , drop = FALSE]))) / svar[j]
+      # sum the contribution of precision
+      Bsum = Bsum + tcrossprod(kronecker(zobs[i, ], t(sbasis[ntposition, , drop = FALSE]))) / svar[j]
+    }
+
+    # stack the penalty parameter
+    pens = NULL; for(l in 1 : numz) pens = c(pens, rep(1e-8, 2), rep(eta[j, l], nums - 2))
+    # Cholesky factorization of posterior precision matrix
+    cholmat = chol(Bsum + diag(pens))
+
+    # sample from the posterior distribution
+    zcoef[j, ] = backsolve(cholmat, forwardsolve(t(cholmat), as.vector(bsum)) + rnorm(length(bsum)))
+
+    # update the smoothness parameter
+    for(l in 1 : numz) {
+      shape = (nums - 2) / 2 + 0.001; rate = crossprod(zcoef[j, ((l - 1) * nums + 1) : (l * nums)][- c(1, 2)]) / 2 + 0.001
+      # sample from the posterior gamma distribution
+      eta[j, l] = rgamma(1, shape, rate)
+    }
+  }
+
+  return(list(zcoef = zcoef, eta = eta))
+}
+
