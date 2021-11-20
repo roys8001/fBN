@@ -7,5 +7,9 @@ Author: person("Saptarshi", "Roy",email = "roys8001@stat.tamu.edu",role =c("aut"
 Maintainer: Saptarshi Roy <roys8001@stat.tamu.edu>
 Description: More about what it does (maybe more than one line)
 License: GPL (>= 3)
-Imports: Rcpp (>= 1.0.7)
+Imports: 
+    fda,
+    Rcpp (>= 1.0.7),
+    RGeode,
+    splines2
 LinkingTo: Rcpp, RcppArmadillo
