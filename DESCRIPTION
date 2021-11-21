@@ -5,7 +5,7 @@ Version: 1.0
 Date: 2021-11-17
 Author: person("Saptarshi", "Roy",email = "roys8001@stat.tamu.edu",role =c("aut", "cre"))
 Maintainer: Saptarshi Roy <roys8001@stat.tamu.edu>
-Description: More about what it does (maybe more than one line)
+Description: This function aims to explore the dependence or causal structure in multivariate function data. The model builds on a dirichlet process scale mixtures in the graphical modelling of principal scores and a data driven approach to learn principal functions. The posterior inference is conducted with Markov Chain Monte Carlo.
 License: GPL (>= 3)
 Imports: 
     fda,
