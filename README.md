@@ -14,4 +14,16 @@ Continuously monitoring multiple interrelated variables is routinely conducted i
 
 Run the following command - devtools::install_github("roys8001/fBN")
 
+# To Do
+
+The following things are left to be done:
+
+1) Build R wrapper.
+
+2) Add three functions to find principal scores, sampling  error and to generate causal structure information to the fBN.cpp file.
+
+3) Add a function to obtain the initial parameters to the fBN.R file.
+
+
+
 
