@@ -13,3 +13,4 @@ Imports:
     RGeode,
     splines2
 LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.1.2
