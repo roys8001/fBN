@@ -6,6 +6,15 @@ library(RGeode)
 
 ### Function to generate spline information
 
+#' Title
+#'
+#' @param time
+#' @param nknots
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_sinfo = function(time, nknots) {
   # get boundary and interior knots
   utime = sort(unique(time)); lknot = min(utime); uknot = max(utime)
