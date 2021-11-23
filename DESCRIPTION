@@ -1,7 +1,7 @@
 Package: fBN
 Type: Package
 Title: Functional Bayesian Network
-Version: 1.0
+Version: 1.0.0
 Date: 2021-11-17
 Author: person("Saptarshi", "Roy",email = "roys8001@stat.tamu.edu",role =c("aut", "cre"))
 Maintainer: Saptarshi Roy <roys8001@stat.tamu.edu>
