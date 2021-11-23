@@ -72,3 +72,56 @@ Rcpp::List get_zcoef(mat xobs, mat zobs, mat scoef, mat sbasis, mat fscore, mat 
 
   return Rcpp::List::create(Rcpp::Named("zcoef") = zcoef, Rcpp::Named("eta") = eta);
 }
+
+// [[Rcpp::export]]
+Rcpp::List get_scoef(mat xobs, mat zobs, mat zcoef, mat scoef, mat sbasis, mat penat, mat fscore, vec svar, vec lambda, uvec tindex, uvec cindex, uvec findex, bool orderLambdas = 1) {
+  uword numc = svar.n_elem, numk = scoef.n_cols, nums = sbasis.n_cols, numx = xobs.n_rows; uvec index = linspace<uvec>(0, numk - 1, numk);
+  // recursively update for each column
+  for(uword k = 0; k < numk; k ++) {
+    vec msum = zeros<vec>(nums); mat vsum = zeros<mat>(nums, nums);
+    // sum over all nodes
+    for(uword j = 0; j < numc; j ++) {
+      uvec cposit = linspace<uvec>(cindex(j), cindex(j + 1) - 1, cindex(j + 1) - cindex(j));
+      uvec fposit = linspace<uvec>(findex(j), findex(j + 1) - 1, findex(j + 1) - findex(j));
+      uvec tposit = tindex(cposit); // position of available time points
+
+      mat feval = fscore.cols(fposit(find(index != k))) * trans(sbasis.rows(tposit) * scoef.cols(find(index != k)));
+      // sum over all samples (excluding missing values)
+      for(uword i = 0; i < numx; i ++) {
+        vec yobs = trans(xobs.row(i)); yobs = yobs(cposit) - trans(zcoef.row(j) * trans(kron(zobs.row(i), sbasis.rows(tposit))));
+        yobs = yobs - trans(feval.row(i)); uvec uposit = find_finite(yobs); vec ftemp = trans(fscore.row(i));
+        // calculate mean and covariance matrix
+        msum = msum + trans(ftemp(fposit(k)) * trans(yobs(uposit)) * sbasis.rows(tposit(uposit))) / svar(j);
+        vsum = vsum + accu(ftemp(fposit(k)) * ftemp(fposit(k))) * trans(sbasis.rows(tposit(uposit))) * sbasis.rows(tposit(uposit)) / svar(j);
+      }
+    }
+
+    // perform cholesky decomposition of covariance matrix
+    mat cholmat = chol(vsum + diagmat(join_cols(1e-8 * ones<vec>(2), lambda(k) * ones<vec>(nums - 2))));
+    // calculate joint orthogonality constraints
+    mat ocont = penat * scoef.cols(find(index != k));
+    // sample the unconstrained vector
+    vec ucont = solve(trimatu(cholmat), solve(trimatl(trans(cholmat)), msum) + randn(msum.n_elem));
+    // compute the vector of shift
+    mat scont = solve(trimatu(cholmat), solve(trimatl(trans(cholmat)), ocont));
+    // calculate the constrained vector
+    vec vcont = ucont - scont * inv(trans(ocont) * scont) * trans(ocont) * ucont;
+
+    scoef.col(k) = vcont / sqrt(accu(trans(vcont) * penat * vcont));
+
+    // update penalty parameter
+    vec sctemp = scoef.col(k); double shape = (nums - 2) / 2 + 0.001, rate = accu(pow(sctemp(span(2, sctemp.n_elem - 1)), 2)) / 2 + 0.01;
+    // set upper and lower bound constrain
+    double lbound = 1e-8, ubound = 1e8; if(orderLambdas == 1) {
+      if(k != 0) ubound = lambda(k - 1);
+      if(k != (numk - 1)) lbound = lambda(k + 1);
+    }
+
+    vec range = zeros<vec>(2); range(0) = lbound; range(1) = ubound;
+    // generate lambda from truncated distribution
+    lambda(k) = rgammatr(shape, rate, range);
+  }
+
+  return Rcpp::List::create(Rcpp::Named("scoef") = scoef, Rcpp::Named("lambda") = lambda);
+}
+
