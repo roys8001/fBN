@@ -24,6 +24,8 @@ The following things are left to be done:
 
 3) Add a function to obtain the initial parameters to the fBN.R file.
 
+4) Perform compatibility checks on user supplied input.
 
+5) If time permits, create a vignette to demonstrate the usage.
 
 
