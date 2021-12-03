@@ -21,6 +21,14 @@ get_fscore <- function(xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tind
     .Call(`_fBN_get_fscore`, xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex)
 }
 
+get_svar <- function(xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex) {
+    .Call(`_fBN_get_svar`, xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex)
+}
+
+get_ginfo <- function(fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob) {
+    .Call(`_fBN_get_ginfo`, fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob)
+}
+
 rcpparma_hello_world <- function() {
     .Call(`_fBN_rcpparma_hello_world`)
 }

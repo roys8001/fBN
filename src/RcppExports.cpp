@@ -100,6 +100,45 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_svar
+arma::vec get_svar(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat scoef, arma::mat sbasis, arma::mat fscore, arma::uvec tindex, arma::uvec cindex, arma::uvec findex);
+RcppExport SEXP _fBN_get_svar(SEXP xobsSEXP, SEXP zobsSEXP, SEXP zcoefSEXP, SEXP scoefSEXP, SEXP sbasisSEXP, SEXP fscoreSEXP, SEXP tindexSEXP, SEXP cindexSEXP, SEXP findexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type xobs(xobsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type zobs(zobsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type zcoef(zcoefSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type scoef(scoefSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sbasis(sbasisSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type fscore(fscoreSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type tindex(tindexSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type cindex(cindexSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type findex(findexSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_svar(xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_ginfo
+Rcpp::List get_ginfo(arma::mat fscore, arma::mat fstructure, arma::mat gstructure, arma::mat fvar, arma::umat cmat, arma::vec degree, arma::vec mass, arma::uvec findex, double cvar, double eprob);
+RcppExport SEXP _fBN_get_ginfo(SEXP fscoreSEXP, SEXP fstructureSEXP, SEXP gstructureSEXP, SEXP fvarSEXP, SEXP cmatSEXP, SEXP degreeSEXP, SEXP massSEXP, SEXP findexSEXP, SEXP cvarSEXP, SEXP eprobSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type fscore(fscoreSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type fstructure(fstructureSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type gstructure(gstructureSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type fvar(fvarSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type cmat(cmatSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type degree(degreeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mass(massSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type findex(findexSEXP);
+    Rcpp::traits::input_parameter< double >::type cvar(cvarSEXP);
+    Rcpp::traits::input_parameter< double >::type eprob(eprobSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_ginfo(fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpparma_hello_world
 arma::mat rcpparma_hello_world();
 RcppExport SEXP _fBN_rcpparma_hello_world() {
@@ -150,6 +189,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fBN_get_zcoef", (DL_FUNC) &_fBN_get_zcoef, 10},
     {"_fBN_get_scoef", (DL_FUNC) &_fBN_get_scoef, 13},
     {"_fBN_get_fscore", (DL_FUNC) &_fBN_get_fscore, 11},
+    {"_fBN_get_svar", (DL_FUNC) &_fBN_get_svar, 9},
+    {"_fBN_get_ginfo", (DL_FUNC) &_fBN_get_ginfo, 10},
     {"_fBN_rcpparma_hello_world", (DL_FUNC) &_fBN_rcpparma_hello_world, 0},
     {"_fBN_rcpparma_outerproduct", (DL_FUNC) &_fBN_rcpparma_outerproduct, 1},
     {"_fBN_rcpparma_innerproduct", (DL_FUNC) &_fBN_rcpparma_innerproduct, 1},

@@ -193,3 +193,126 @@ arma::vec get_svar(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat sc
 
   return svar;
 }
+
+
+// [[Rcpp::export]]
+Rcpp::List get_ginfo(arma::mat fscore, arma::mat fstructure, arma::mat gstructure, arma::mat fvar, arma::umat cmat, arma::vec degree, arma::vec mass, arma::uvec findex, double cvar, double eprob) {
+  arma::uword numx = fscore.n_rows, numc = gstructure.n_cols, numk = fstructure.n_cols;
+
+  // update graph structure
+  for(arma::uword j = 0; j < numk; j ++) {
+    for(arma::uword l = 0; l < numk; l ++) {
+      arma::mat new_fstructure = fstructure, new_gsturecture = zeros<mat>(numc, numc);
+      new_fstructure(j, l) = 1 - new_fstructure(j, l);
+      // update outer structure
+      for(arma::uword k = 0; k < numc; k ++) {
+        for(arma::uword s = 0; s < numc; s ++) {
+          arma::uvec row_fposit = linspace<uvec>(findex(k), findex(k + 1) - 1, findex(k + 1) - findex(k));
+          arma::uvec col_fposit = linspace<uvec>(findex(s), findex(s + 1) - 1, findex(s + 1) - findex(s));
+
+          if(accu(new_fstructure(row_fposit, col_fposit)) != 0) new_gsturecture(k, s) = 1;
+        }
+      }
+      // check and update new structure
+      if(checkDAG(new_gsturecture)) {
+        arma::vec snum = fvar.col(j), sden = fvar.col(j);
+
+        if(accu(fstructure.row(j)) != 0) sden = sden + cvar * sum(square(fscore.cols(find(fstructure.row(j)))), 1);
+        if(accu(new_fstructure.row(j)) != 0) snum = snum + cvar * sum(square(fscore.cols(find(new_fstructure.row(j)))), 1);
+
+        double den = accu(log_normpdf(fscore.col(j), zeros<vec>(numx), sqrt(sden))) + fstructure(j, l) * log(eprob) + (1 - fstructure(j, l)) * log(1 - eprob);
+        double num = accu(log_normpdf(fscore.col(j), zeros<vec>(numx), sqrt(snum))) + new_fstructure(j, l) * log(eprob) + (1 - new_fstructure(j, l)) * log(1 - eprob);
+
+        if((den - num) < log(1 / randu() - 1)) {fstructure = new_fstructure; gstructure = new_gsturecture;}
+      }
+    }
+  }
+
+  // update coefficient given graph structure
+  arma::mat fcoef = zeros<mat>(numk, numk);
+  // recursively for each coordinate
+  for(arma::uword j = 0; j < numk; j ++) {
+    arma::uvec oindex = find(fstructure.row(j) == 1);
+    arma::uword ind = 0;
+
+    if(oindex.n_elem != 0) {
+      arma::mat ftemp = diagmat(1 / sqrt(fvar.col(j))) * fscore.cols(find(fstructure.row(j))), cholmat = chol(trans(ftemp) * ftemp + diagmat(ones<vec>(accu(fstructure.row(j)))) / cvar);
+      arma::vec mean = trans(ftemp) * (fscore.col(j) / sqrt(fvar.col(j)));
+      // calculate nonzero values
+      arma::vec fvec = solve(trimatu(cholmat), solve(trimatl(trans(cholmat)), mean) + randn(mean.n_elem));
+
+      for(arma::uword l = 0; l < numk; l ++) {
+        if(any(oindex == l)) {fcoef(j, l) = fvec(ind); ind = ind + 1;} else fcoef(j, l) = 0;
+      }
+    } else fcoef.row(j) = trans(zeros<vec>(numk));
+  }
+
+  // update variance of nonzero coefficients
+  double anew = 1 + accu(fstructure != 0) / 2, bnew = 1 + accu(pow(fcoef, 2)) / 2;
+  // sample from the posterior
+  cvar = 1 / randg(distr_param(anew, 1 / bnew));
+
+  // update edge probability
+  double cnew = 0.5 + accu(fstructure), dnew = 0.5 + accu(1 - fstructure) - numk, enew = 1;
+  // sample from the posterior
+  double apart = randg(distr_param(cnew, enew)), bpart = randg(distr_param(dnew, enew));
+  eprob = apart / (apart + bpart);
+
+  arma::mat cresidual = fscore - fscore * trans(fcoef);
+  arma::uvec index = linspace<uvec>(0, numx - 1, numx);
+  // update the Dirichlet process model
+  for(arma::uword j = 0; j < numk; j ++) {
+    for(arma::uword i = 0; i < numx; i ++) {
+      arma::uvec ctemp = cmat.col(j);
+      arma::uword ctotal = max(ctemp(find(index != i)));
+      arma::vec cprob = zeros<vec>(ctotal + 1);
+      // calculate probability for existing clusters
+      for(arma::uword k = 1; k <= ctotal; k ++) {
+        arma::vec btemp = cresidual.col(j);
+        btemp = btemp(find(index != i));
+        btemp = btemp(find(ctemp(find(index != i)) == k));
+        double acount = accu(ctemp(find(index != i)) == k), bcount = accu(pow(btemp, 2));
+
+        cprob(k - 1) = lgamma((degree(j) + acount + 1) / 2) - (degree(j) + acount + 1) / 2 * log((degree(j) + bcount + pow(cresidual(i, j), 2)) / 2);
+        cprob(k - 1) = cprob(k - 1) + log(acount) - lgamma((degree(j) + acount) / 2) + (degree(j) + acount) / 2 * log((degree(j) + bcount) / 2);
+      }
+      // calculate probability of new cluster
+      cprob(ctotal) = lgamma((degree(j) + 1) / 2) - (degree(j) + 1) / 2 * log((degree(j) + pow(cresidual(i, j), 2)) / 2);
+      cprob(ctotal) = cprob(ctotal) + log(mass(j)) - lgamma(degree(j) / 2) + degree(j) / 2 * log(degree(j) / 2);
+      // sample new cluster index
+      cmat(i, j) = Rcpp::as<uword>(sample(Rcpp::Named("x") = linspace<uvec>(1, ctotal + 1, ctotal + 1), Rcpp::Named("size") = 1, Rcpp::Named("prob") = exp(cprob)));
+
+      // remove empty clusters
+      for(arma::uword k = 1; k <= (ctotal + 1); k ++) {
+        if(accu(cmat.col(j) == k) == 0) {for(arma::uword t = 0; t < numx; t ++) {if(cmat(t, j) > k) cmat(t, j) = cmat(t, j) - 1;}}
+      }
+    }
+
+    // update cluster specific parameter
+    for(arma::uword k = 1; k <= max(cmat.col(j)); k ++) {
+      arma::vec rtemp = cresidual.col(j);
+      double anew = degree(j) + accu(cmat.col(j) == k) / 2, bnew = degree(j) + accu(pow(rtemp(find(cmat.col(j) == k)), 2)) / 2;
+      // sample from the posterior
+      double stemp = 1 / randg(distr_param(anew, 1 / bnew));
+      for(arma::uword i = 0; i < numx; i ++) {if(cmat(i, j) == k) fvar(i, j) = stemp;}
+    }
+
+    // update mass parameter
+    double cc = 1; double aphi = randg(distr_param(mass(j) + 1, cc)), bphi = randg(distr_param(numx, cc)), phi = aphi / (aphi + bphi);
+    double pi = (1 + max(cmat.col(j)) - 1) / (numx * (1 - log(phi))); pi = pi / (1 + pi);
+    // augmentation with pi
+    if(randu() < pi) mass(j) = randg(distr_param(1 + max(cmat.col(j)), 1 / (1 - log(phi)))); else mass(j) = randg(distr_param(1 + max(cmat.col(j)) - 1, 1 / (1 - log(phi))));
+
+    // update degree parameter: U(0, 10)
+    double new_degree = 10 * randu();
+    // calculate acceptance rate
+    double den = accu(log(Rcpp::as<vec>(dgamma(Rcpp::Named("x") = 1 / unique(fvar.col(j)), Rcpp::Named("shape") = degree(j) / 2, Rcpp::Named("rate") = degree(j) / 2))));
+    double num = accu(log(Rcpp::as<vec>(dgamma(Rcpp::Named("x") = 1 / unique(fvar.col(j)), Rcpp::Named("shape") = new_degree / 2, Rcpp::Named("rate") = new_degree / 2))));
+
+    if((num - den) >= log(randu())) degree(j) = new_degree;
+  }
+
+  return Rcpp::List::create(Rcpp::Named("gstructure") = gstructure, Rcpp::Named("fstructure") = fstructure, Rcpp::Named("fcoef") = fcoef, Rcpp::Named("fvar") = fvar,
+                                        Rcpp::Named("cmat") = cmat, Rcpp::Named("degree") = degree, Rcpp::Named("mass") = mass, Rcpp::Named("cvar") = cvar, Rcpp::Named("eprob") = eprob);
+}
+
