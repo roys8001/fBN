@@ -160,3 +160,36 @@ arma::mat get_fscore(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat 
 
   return fscore;
 }
+
+
+// [[Rcpp::export]]
+arma::vec get_svar(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat scoef, arma::mat sbasis, arma::mat fscore, arma::uvec tindex, arma::uvec cindex, arma::uvec findex) {
+  arma::uword numc = fscore.n_cols / scoef.n_cols, numx = xobs.n_rows;
+  arma::vec svar = zeros<vec>(numc);
+  // element-wise update
+  for(arma::uword j = 0; j < numc; j ++) {
+    arma::uvec cposit = linspace<uvec>(cindex(j), cindex(j + 1) - 1, cindex(j + 1) - cindex(j));
+    arma::uvec fposit = linspace<uvec>(findex(j), findex(j + 1) - 1, findex(j + 1) - findex(j));
+    arma::uvec tposit = tindex(cposit); // position of available time points
+    // calculate shape parameter
+    arma::mat xtemp = xobs.cols(cposit);
+    xtemp = xtemp(find_finite(xtemp));
+    double bnew = 0.01;
+    double anew = 0.01 + xtemp.n_elem / 2;
+
+    arma::mat feval = fscore.cols(fposit) * trans(sbasis.rows(tposit) * scoef);
+    // sum over all samples (excluding missing values)
+    for(arma::uword i = 0; i < numx; i ++) {
+      arma::vec yobs = trans(xobs.row(i));
+      yobs = yobs(cposit) - trans(zcoef.row(j) * trans(kron(zobs.row(i), sbasis.rows(tposit))));
+      yobs = yobs - trans(feval.row(i)); uvec uposit = find_finite(yobs);
+      // calculate rate parameter
+      bnew = bnew + accu(yobs(uposit) % yobs(uposit)) / 2;
+    }
+
+    // sample from the posterior inverse gamma distribution
+    svar(j) = 1 / randg(distr_param(anew, 1 / bnew));
+  }
+
+  return svar;
+}
