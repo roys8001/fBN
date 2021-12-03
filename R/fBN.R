@@ -46,6 +46,20 @@ get_sinfo = function(time, nknots) {
 
 ### Function to generate initial baseline coefficients
 
+#' Title
+#'
+#' @param xobs
+#' @param zobs
+#' @param sbasis
+#' @param svar
+#' @param fscore
+#' @param fpc
+#' @param time
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_initial_zcoef = function(xobs, zobs, sbasis, svar, fscore, fpc, time) {
   utime = sort(unique(time)); numc = length(svar); numk = ncol(fscore) / numc; nums = ncol(sbasis); numz = ncol(zobs); numx = nrow(xobs)
   # get position of nodes
