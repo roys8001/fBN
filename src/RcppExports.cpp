@@ -79,6 +79,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_fscore
+arma::mat get_fscore(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat scoef, arma::mat sbasis, arma::mat fvar, arma::mat fcoef, arma::vec svar, arma::uvec tindex, arma::uvec cindex, arma::uvec findex);
+RcppExport SEXP _fBN_get_fscore(SEXP xobsSEXP, SEXP zobsSEXP, SEXP zcoefSEXP, SEXP scoefSEXP, SEXP sbasisSEXP, SEXP fvarSEXP, SEXP fcoefSEXP, SEXP svarSEXP, SEXP tindexSEXP, SEXP cindexSEXP, SEXP findexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type xobs(xobsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type zobs(zobsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type zcoef(zcoefSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type scoef(scoefSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sbasis(sbasisSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type fvar(fvarSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type fcoef(fcoefSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type svar(svarSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type tindex(tindexSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type cindex(cindexSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type findex(findexSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_fscore(xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpparma_hello_world
 arma::mat rcpparma_hello_world();
 RcppExport SEXP _fBN_rcpparma_hello_world() {
@@ -128,6 +149,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fBN_checkDAG", (DL_FUNC) &_fBN_checkDAG, 1},
     {"_fBN_get_zcoef", (DL_FUNC) &_fBN_get_zcoef, 10},
     {"_fBN_get_scoef", (DL_FUNC) &_fBN_get_scoef, 13},
+    {"_fBN_get_fscore", (DL_FUNC) &_fBN_get_fscore, 11},
     {"_fBN_rcpparma_hello_world", (DL_FUNC) &_fBN_rcpparma_hello_world, 0},
     {"_fBN_rcpparma_outerproduct", (DL_FUNC) &_fBN_rcpparma_outerproduct, 1},
     {"_fBN_rcpparma_innerproduct", (DL_FUNC) &_fBN_rcpparma_innerproduct, 1},

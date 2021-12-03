@@ -17,6 +17,10 @@ get_scoef <- function(xobs, zobs, zcoef, scoef, sbasis, penat, fscore, svar, lam
     .Call(`_fBN_get_scoef`, xobs, zobs, zcoef, scoef, sbasis, penat, fscore, svar, lambda, tindex, cindex, findex, orderLambdas)
 }
 
+get_fscore <- function(xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex) {
+    .Call(`_fBN_get_fscore`, xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex)
+}
+
 rcpparma_hello_world <- function() {
     .Call(`_fBN_rcpparma_hello_world`)
 }

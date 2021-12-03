@@ -129,3 +129,34 @@ Rcpp::List get_scoef(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat 
 }
 
 // [[Rcpp::export]]
+arma::mat get_fscore(arma::mat xobs, arma::mat zobs, arma::mat zcoef, arma::mat scoef, arma::mat sbasis, arma::mat fvar, arma::mat fcoef, arma::vec svar, arma::uvec tindex, arma::uvec cindex, arma::uvec findex) {
+  arma::uword numx = xobs.n_rows, numc = svar.n_elem, numk = scoef.n_cols;
+  arma::mat fscore = zeros<mat>(numx, numc * numk);
+
+  // sum over all samples
+  for(arma::uword i = 0; i < numx; i ++) {
+    arma::mat var = zeros<mat>(numc * numk, numc * numk);
+    arma::vec mean = zeros<vec>(numc * numk);
+    // recursively for each node
+    for(arma::uword j = 0; j < numc; j ++) {
+      arma::uvec cposit = linspace<uvec>(cindex(j), cindex(j + 1) - 1, cindex(j + 1) - cindex(j));
+      arma::uvec fposit = linspace<uvec>(findex(j), findex(j + 1) - 1, findex(j + 1) - findex(j));
+      arma::uvec tposit = tindex(cposit); // position of available time points
+
+      arma::vec yobs = trans(xobs.row(i));
+      yobs = yobs(cposit) - trans(zcoef.row(j) * trans(kron(zobs.row(i), sbasis.rows(tposit))));
+      arma::uvec uposit = find_finite(yobs);
+      arma::mat ftemp = sbasis.rows(tposit(uposit)) * scoef;
+      var(fposit, fposit) = trans(ftemp) * ftemp / svar(j);
+      // calculate mean
+      mean(fposit) = trans(trans(yobs(uposit)) * ftemp) / svar(j);
+    }
+
+    // calculate cholesky factorization
+    arma::mat fcov = diagmat(1 / sqrt(fvar.row(i))) * (diagmat(ones<vec>(numc * numk)) - fcoef), cholmat = chol(var + trans(fcov) * fcov);
+    // generate sample-specific score from posterior
+    fscore.row(i) = trans(solve(trimatu(cholmat), solve(trimatl(trans(cholmat)), mean) + randn(mean.n_elem)));
+  }
+
+  return fscore;
+}
