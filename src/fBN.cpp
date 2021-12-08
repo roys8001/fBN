@@ -14,8 +14,12 @@ double rgammatr(double a, double b, arma::vec range, double n = 1) {
   return Rcpp::as<double>(trgamma(n, a, b, range));
 }
 
-Rcpp::Function dgamma("dgamma");
-Rcpp::Function sample("sample");
+Rcpp::Environment stats("package:stats");
+Rcpp::Function dgamma = stats["dgamma"];
+//Rcpp::Function dgamma("dgamma");
+Rcpp::Environment base("package:base");
+Rcpp::Function sample = base["sample"];
+//Rcpp::Function sample("sample");
 
 // [[Rcpp::export]]
 bool checkDAG(arma::mat G) {
