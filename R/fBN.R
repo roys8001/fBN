@@ -6,15 +6,6 @@ library(RGeode)
 
 ### Function to generate spline information
 
-#' Title
-#'
-#' @param time
-#' @param nknots
-#'
-#' @return
-#' @export
-#'
-#' @examples
 get_sinfo = function(time, nknots) {
   # get boundary and interior knots
   utime = sort(unique(time)); lknot = min(utime); uknot = max(utime)
@@ -46,20 +37,6 @@ get_sinfo = function(time, nknots) {
 
 ### Function to generate initial baseline coefficients
 
-#' Title
-#'
-#' @param xobs
-#' @param zobs
-#' @param sbasis
-#' @param svar
-#' @param fscore
-#' @param fpc
-#' @param time
-#'
-#' @return
-#' @export
-#'
-#' @examples
 get_initial_zcoef = function(xobs, zobs, sbasis, svar, fscore, fpc, time) {
   utime = sort(unique(time)); numc = length(svar); numk = ncol(fscore) / numc; nums = ncol(sbasis); numz = ncol(zobs); numx = nrow(xobs)
   # get position of nodes
@@ -304,5 +281,4 @@ get_initial_parameter = function(xobs, zobs, time, numk = NULL, nknots = 20, tol
   list(fscore = fscore, zcoef = zcoef, eta = eta, scoef = scoef, lambda = lambda, svar = svar, fvar = fvar, fcoef = fcoef, numk = numk, penat = penat, findex = findex,
        gstructure = gstructure, fstructure = fstructure, cvar = cvar, eprob = eprob, cmat = cmat, degree = degree, mass = mass, sbasis = sbasis, cindex = cindex, tindex = tindex)
 }
-
 
