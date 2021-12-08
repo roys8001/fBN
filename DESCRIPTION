@@ -9,8 +9,11 @@ Description: This function aims to explore the dependence or causal structure in
 License: GPL (>= 3)
 Imports: 
     fda,
+    igraph,
+    orthogonalsplinebasis,
     Rcpp (>= 1.0.7),
     RGeode,
+    rmutil,
     splines2
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
