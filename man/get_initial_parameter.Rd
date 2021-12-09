@@ -2,7 +2,7 @@
 % Please edit documentation in R/fBN_wrapper.R
 \name{get_initial_parameter}
 \alias{get_initial_parameter}
-\title{Title Functional Bayesian Network}
+\title{Functional Bayesian Network}
 \usage{
 get_initial_parameter(
   xobs,
@@ -15,9 +15,9 @@ get_initial_parameter(
 )
 }
 \arguments{
-\item{xobs}{a \eqn{n × |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \eqn{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.}
+\item{xobs}{a \eqn{n x |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \eqn{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.}
 
-\item{zobs}{a \eqn{n × q} matrix where q is the number of baseline scalar covariates}
+\item{zobs}{a \eqn{n x q} matrix where q is the number of baseline scalar covariates}
 
 \item{time}{zzzz}
 
@@ -33,10 +33,19 @@ get_initial_parameter(
 
 }
 \description{
-Title Functional Bayesian Network
+Functional Bayesian Network
 }
 \examples{
-library(rmutil); library(orthogonalsplinebasis); library(igraph); library(splines)
+#install.packages("rmutil")
+#install.packages("orthogonalsplinebasis")
+#install.packages("igraph")
+#install.packages("splines")
+#library(rmutil)
+#library(orthogonalsplinebasis)
+#library(igraph)
+#library(splines)
+require(rmutil); require(orthogonalsplinebasis); require(igraph); require(splines)
+
 numx = 500 # Number of sample points
 numc = 10 # Number of variables
 numz = 2 # Number of baseline scalar covariates
@@ -53,14 +62,15 @@ GS = matrix(0, numc * numk, numc * numk)
 for(j in 2 : numc) {
   for(l in 1 : (j - 1)) {
     if(G0[j, l] == 1) {
-      cindex = ((j - 1) * numk + 1) : (j * numk);
+      cindex = ((j - 1) * numk + 1) : (j * numk)
       findex = ((l - 1) * numk + 1) : (l * numk)
       # selection of edges
       GS[cindex, findex] = as.numeric(runif(numk * numk) < 0.5)
-      while(sum(GS[cindex, findex]) == 0) GS[cindex, findex] = as.numeric(runif(numk * #' numk) < 0.5)
+      while(sum(GS[cindex, findex]) == 0) GS[cindex, findex] = as.numeric(runif(numk *  numk) < 0.5)
     }
   }
 }
+
 # nonzero signal strength
 BS = matrix(0, numc * numk, numc * numk)
 BS[GS != 0] = runif(sum(GS != 0), vstrength / 2, vstrength) # uniform
@@ -103,14 +113,22 @@ for(j in 1 : numc) {
   fposition = ((j - 1) * numk + 1) : (j * numk); cposition = cindex[j] : (cindex[j + 1] - 1)
   # calculate signal strength
   ee = tcrossprod(score[, fposition], fPC[match(tobs[cposition], t0), ])
-  for(l in 1 : numz) ee = ee + crossprod(t(zobs[, l]), tcrossprod(ecoef[j, ((l - 1) * nums + 1) : (l * nums)], zbase[match(tobs[cposition], t0), ]))
-
+  for(l in 1 : numz) {
+    din = zbase[match(tobs[cposition], t0), ]
+    alo = tcrossprod(ecoef[j, ((l - 1) * nums + 1) : (l * nums)], din)
+    ee = ee + crossprod(t(zobs[, l]), alo)
+  }
   e0[j] = vnoise * mean(abs(ee))
   # match sample with observation time
   for(i in 1 : numx) {
-    xposition = match(tx[i, j, ], tobs[cposition]); tposition = match(tx[i, j, ], t0)
+    xposition = match(tx[i, j, ], tobs[cposition])
+    tposition = match(tx[i, j, ], t0)
+
     # generate observed data
-    xobs[i, cposition[xposition]] = e0[j] * rnorm(numxt) + crossprod(ecoef[j, ], kronecker(zobs[i, ], t(zbase[tposition, ]))) + tcrossprod(score[i, fposition], fPC[tposition, ])
+    sir = kronecker(zobs[i, ], t(zbase[tposition, ]))
+    m = crossprod(ecoef[j, ], sir)
+    tcros = tcrossprod(score[i, fposition], fPC[tposition, ])
+    xobs[i, cposition[xposition]] = e0[j] * rnorm(numxt) + m + tcros
   }
 }
 # fill zeros with NA
