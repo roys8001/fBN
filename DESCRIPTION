@@ -14,3 +14,7 @@ Imports:
     splines2
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
+Suggests: 
+    rmutil,
+    igraph,
+    orthogonalsplinebasis
