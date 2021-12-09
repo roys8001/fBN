@@ -3,8 +3,8 @@ title: "Functional Bayesian Network - fBN"
 author: "SAPTARSHI ROY"
 date: "05/12/2021"
 output:
-  pdf_document: default
   github_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
