@@ -9,12 +9,22 @@
 #' @param useAT higag
 #'
 #' @return
-#' @importFrom stats
+#' @importFrom stats splinefun lm quantile rgamma rnorm
+#' @importFrom fda create.bspline.basis create.monomial.basis eval.penalty inprod
+#' @importFrom splines bs
 #' @export
 #'
 #' @examples
-#' library(rmutil); library(orthogonalsplinebasis); library(igraph); library(splines)
-
+#' #install.packages("rmutil")
+#' #install.packages("orthogonalsplinebasis")
+#' #install.packages("igraph")
+#' #install.packages("splines")
+#' #library(rmutil)
+#' #library(orthogonalsplinebasis)
+#' #library(igraph)
+#' #library(splines)
+#' require(rmutil); require(orthogonalsplinebasis); require(igraph); require(splines)
+#'
 #' numx = 500 # Number of sample points
 #' numc = 10 # Number of variables
 #' numz = 2 # Number of baseline scalar covariates
@@ -32,15 +42,15 @@
 #' for(j in 2 : numc) {
 #'   for(l in 1 : (j - 1)) {
 #'     if(G0[j, l] == 1) {
-#'       cindex = ((j - 1) * numk + 1) : (j * numk);
+#'       cindex = ((j - 1) * numk + 1) : (j * numk)
 #'       findex = ((l - 1) * numk + 1) : (l * numk)
 #'       # selection of edges
 #'       GS[cindex, findex] = as.numeric(runif(numk * numk) < 0.5)
-#'       while(sum(GS[cindex, findex]) == 0) GS[cindex, findex] = as.numeric(runif(numk * #' numk) < 0.5)
+#'       while(sum(GS[cindex, findex]) == 0) GS[cindex, findex] = as.numeric(runif(numk *  numk) < 0.5)
 #'     }
 #'   }
 #' }
-
+#'
 #' # nonzero signal strength
 #' BS = matrix(0, numc * numk, numc * numk)
 #' BS[GS != 0] = runif(sum(GS != 0), vstrength / 2, vstrength) # uniform
@@ -83,14 +93,22 @@
 #'   fposition = ((j - 1) * numk + 1) : (j * numk); cposition = cindex[j] : (cindex[j + 1] - 1)
 #'   # calculate signal strength
 #'   ee = tcrossprod(score[, fposition], fPC[match(tobs[cposition], t0), ])
-#'   for(l in 1 : numz) ee = ee + crossprod(t(zobs[, l]), tcrossprod(ecoef[j, ((l - 1) * nums + 1) : (l * nums)], zbase[match(tobs[cposition], t0), ]))
-#'
+#'   for(l in 1 : numz) {
+#'     din = zbase[match(tobs[cposition], t0), ]
+#'     alo = tcrossprod(ecoef[j, ((l - 1) * nums + 1) : (l * nums)], din)
+#'     ee = ee + crossprod(t(zobs[, l]), alo)
+#'   }
 #'   e0[j] = vnoise * mean(abs(ee))
 #'   # match sample with observation time
 #'   for(i in 1 : numx) {
-#'     xposition = match(tx[i, j, ], tobs[cposition]); tposition = match(tx[i, j, ], t0)
+#'     xposition = match(tx[i, j, ], tobs[cposition])
+#'     tposition = match(tx[i, j, ], t0)
+#'
 #'     # generate observed data
-#'     xobs[i, cposition[xposition]] = e0[j] * rnorm(numxt) + crossprod(ecoef[j, ], kronecker(zobs[i, ], t(zbase[tposition, ]))) + tcrossprod(score[i, fposition], fPC[tposition, ])
+#'     sir = kronecker(zobs[i, ], t(zbase[tposition, ]))
+#'     m = crossprod(ecoef[j, ], sir)
+#'     tcros = tcrossprod(score[i, fposition], fPC[tposition, ])
+#'     xobs[i, cposition[xposition]] = e0[j] * rnorm(numxt) + m + tcros
 #'   }
 #' }
 #' # fill zeros with NA
