@@ -1,6 +1,6 @@
 #' Title Functional Bayesian Network
 #'
-#' @param xobs a \eqn{n × |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \enq{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.
+#' @param xobs a \eqn{n × |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \eqn{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.
 #' @param zobs a \eqn{n × q} matrix where q is the number of baseline scalar covariates
 #' @param time zzzz
 #' @param numk zzxxxx
@@ -9,6 +9,7 @@
 #' @param useAT higag
 #'
 #' @return
+#' @importFrom stats
 #' @export
 #'
 #' @examples

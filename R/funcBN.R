@@ -188,5 +188,3 @@ get_initial_scoef = function(xobs, zobs, zcoef, sbasis, penat, svar, fscore, fpc
 }
 
 
-
-

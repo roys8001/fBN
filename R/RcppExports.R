@@ -2,46 +2,46 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rgammatr <- function(a, b, range, n = 1) {
-    .Call(`_fBN_rgammatr`, a, b, range, n)
+    .Call('_fBN_rgammatr', PACKAGE = 'fBN', a, b, range, n)
 }
 
 checkDAG <- function(G) {
-    .Call(`_fBN_checkDAG`, G)
+    .Call('_fBN_checkDAG', PACKAGE = 'fBN', G)
 }
 
 get_zcoef <- function(xobs, zobs, scoef, sbasis, fscore, eta, svar, tindex, cindex, findex) {
-    .Call(`_fBN_get_zcoef`, xobs, zobs, scoef, sbasis, fscore, eta, svar, tindex, cindex, findex)
+    .Call('_fBN_get_zcoef', PACKAGE = 'fBN', xobs, zobs, scoef, sbasis, fscore, eta, svar, tindex, cindex, findex)
 }
 
 get_scoef <- function(xobs, zobs, zcoef, scoef, sbasis, penat, fscore, svar, lambda, tindex, cindex, findex, orderLambdas = 1L) {
-    .Call(`_fBN_get_scoef`, xobs, zobs, zcoef, scoef, sbasis, penat, fscore, svar, lambda, tindex, cindex, findex, orderLambdas)
+    .Call('_fBN_get_scoef', PACKAGE = 'fBN', xobs, zobs, zcoef, scoef, sbasis, penat, fscore, svar, lambda, tindex, cindex, findex, orderLambdas)
 }
 
 get_fscore <- function(xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex) {
-    .Call(`_fBN_get_fscore`, xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex)
+    .Call('_fBN_get_fscore', PACKAGE = 'fBN', xobs, zobs, zcoef, scoef, sbasis, fvar, fcoef, svar, tindex, cindex, findex)
 }
 
 get_svar <- function(xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex) {
-    .Call(`_fBN_get_svar`, xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex)
+    .Call('_fBN_get_svar', PACKAGE = 'fBN', xobs, zobs, zcoef, scoef, sbasis, fscore, tindex, cindex, findex)
 }
 
 get_ginfo <- function(fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob) {
-    .Call(`_fBN_get_ginfo`, fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob)
+    .Call('_fBN_get_ginfo', PACKAGE = 'fBN', fscore, fstructure, gstructure, fvar, cmat, degree, mass, findex, cvar, eprob)
 }
 
 rcpparma_hello_world <- function() {
-    .Call(`_fBN_rcpparma_hello_world`)
+    .Call('_fBN_rcpparma_hello_world', PACKAGE = 'fBN')
 }
 
 rcpparma_outerproduct <- function(x) {
-    .Call(`_fBN_rcpparma_outerproduct`, x)
+    .Call('_fBN_rcpparma_outerproduct', PACKAGE = 'fBN', x)
 }
 
 rcpparma_innerproduct <- function(x) {
-    .Call(`_fBN_rcpparma_innerproduct`, x)
+    .Call('_fBN_rcpparma_innerproduct', PACKAGE = 'fBN', x)
 }
 
 rcpparma_bothproducts <- function(x) {
-    .Call(`_fBN_rcpparma_bothproducts`, x)
+    .Call('_fBN_rcpparma_bothproducts', PACKAGE = 'fBN', x)
 }
 

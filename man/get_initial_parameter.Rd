@@ -2,7 +2,7 @@
 % Please edit documentation in R/fBN_wrapper.R
 \name{get_initial_parameter}
 \alias{get_initial_parameter}
-\title{Title}
+\title{Title Functional Bayesian Network}
 \usage{
 get_initial_parameter(
   xobs,
@@ -15,15 +15,105 @@ get_initial_parameter(
 )
 }
 \arguments{
-\item{xobs}{a \enq{n × |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \enq{t^{h}_k} of sample i if \enq{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.}
+\item{xobs}{a \eqn{n × |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \eqn{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.}
 
-\item{zobs}{a \enq{n × q} matrix where q is the number of baseline scalar covariates}
+\item{zobs}{a \eqn{n × q} matrix where q is the number of baseline scalar covariates}
 
-\item{useAT}{}
+\item{time}{zzzz}
+
+\item{numk}{zzxxxx}
+
+\item{nknots}{jjhg}
+
+\item{tolCPV}{kdodjk}
+
+\item{useAT}{higag}
 }
 \value{
 
 }
 \description{
-Title
+Title Functional Bayesian Network
+}
+\examples{
+library(rmutil); library(orthogonalsplinebasis); library(igraph); library(splines)
+numx = 500 # Number of sample points
+numc = 10 # Number of variables
+numz = 2 # Number of baseline scalar covariates
+numk = 4 # Number of principal components
+numt = 200 # Total number of time points
+numxt = 10 # Number of timepoints for (sample, variable)
+vstrength = 1
+vnoise = 0.5
+# simulation truth of outer graph structure: DAG
+G0 = matrix(0, numc, numc);
+G0[lower.tri(G0)] = as.numeric(runif(sum(lower.tri(G0))) < 2 / numc)
+# simulation truth of inner graph structure
+GS = matrix(0, numc * numk, numc * numk)
+for(j in 2 : numc) {
+  for(l in 1 : (j - 1)) {
+    if(G0[j, l] == 1) {
+      cindex = ((j - 1) * numk + 1) : (j * numk);
+      findex = ((l - 1) * numk + 1) : (l * numk)
+      # selection of edges
+      GS[cindex, findex] = as.numeric(runif(numk * numk) < 0.5)
+      while(sum(GS[cindex, findex]) == 0) GS[cindex, findex] = as.numeric(runif(numk * #' numk) < 0.5)
+    }
+  }
+}
+# nonzero signal strength
+BS = matrix(0, numc * numk, numc * numk)
+BS[GS != 0] = runif(sum(GS != 0), vstrength / 2, vstrength) # uniform
+BS[GS != 0] = BS[GS != 0] * (1 - 2 * (runif(sum(GS != 0)) < 0.5))
+
+# generate principal scores
+score = matrix(rlaplace(numx * numc * numk, s = vnoise/2), numx, numc * numk)
+score = t(tcrossprod(solve(diag(numc * numk) - BS), score))
+
+# generate all available observation time
+t0 = sort(runif(numt))
+tx = array(0, dim = c(numx, numc, numxt))
+# generate observation time for each sample and node
+for(i in 1 : numx) for(j in 1 : numc) tx[i, j, ] = sample(t0, numxt)
+# summarize observation time for each node
+tobs = NULL
+for(j in 1 : numc) tobs = c(tobs, sort(unique(as.vector(tx[, j, ]))))
+
+# generate functional principal components
+lb = min(t0)
+ub = max(t0)
+ib = quantile(t0, c(0, 1))
+fPC = evaluate(OBasis(knots = c(rep(lb, numk - 1), ib, rep(ub, numk - 1)), order = numk), t0)
+
+# generate baseline variables
+zobs = matrix(rnorm(numx * numz), numx, numz)
+
+# polynomial basis for baseline effects
+zbase = bs(t0);
+nums = ncol(zbase);
+ecoef = matrix(runif(numc * numz * nums, vstrength / 2, vstrength), numc, numz * nums)
+ecoef = ecoef * (1 - 2 * (runif(length(ecoef)) < 0.5))
+
+# generate observation
+xobs = matrix(0, numx, length(tobs))
+cindex = c(1, which(tobs[-1] < tobs[-length(tobs)]) + 1, length(tobs) + 1)
+e0 = rep(0, numc)
+for(j in 1 : numc) {
+  # node index
+  fposition = ((j - 1) * numk + 1) : (j * numk); cposition = cindex[j] : (cindex[j + 1] - 1)
+  # calculate signal strength
+  ee = tcrossprod(score[, fposition], fPC[match(tobs[cposition], t0), ])
+  for(l in 1 : numz) ee = ee + crossprod(t(zobs[, l]), tcrossprod(ecoef[j, ((l - 1) * nums + 1) : (l * nums)], zbase[match(tobs[cposition], t0), ]))
+
+  e0[j] = vnoise * mean(abs(ee))
+  # match sample with observation time
+  for(i in 1 : numx) {
+    xposition = match(tx[i, j, ], tobs[cposition]); tposition = match(tx[i, j, ], t0)
+    # generate observed data
+    xobs[i, cposition[xposition]] = e0[j] * rnorm(numxt) + crossprod(ecoef[j, ], kronecker(zobs[i, ], t(zbase[tposition, ]))) + tcrossprod(score[i, fposition], fPC[tposition, ])
+  }
+}
+# fill zeros with NA
+xobs[xobs == 0] = NaN
+get_initial_parameter(xobs = xobs, zobs = zobs, time = tobs)
 }
