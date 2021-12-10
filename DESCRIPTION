@@ -8,10 +8,12 @@ Maintainer: Saptarshi Roy <roys8001@stat.tamu.edu>
 Description: This function aims to explore the dependence or causal structure in multivariate function data. The model builds on a dirichlet process scale mixtures in the graphical modelling of principal scores and a data driven approach to learn principal functions. The posterior inference is conducted with Markov Chain Monte Carlo.
 License: GPL (>= 3)
 Imports: 
+    base,
     fda,
     Rcpp (>= 1.0.7),
     RGeode,
-    splines2
+    splines2,
+    stats
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
 Suggests: 

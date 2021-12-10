@@ -97,9 +97,6 @@ Continuously monitoring multiple interrelated variables is routinely conducted i
 # ################################ MCMC inference ################################
 # ################################################################################
 # 
-# source('fBN.R')
-# Rcpp::sourceCpp('fBN.cpp')
-# 
 # init_para = get_initial_parameter(xobs, zobs, tobs)
 # # index information
 # cindex = init_para$cindex; findex = init_para$findex; tindex = init_para$tindex
