@@ -1,8 +1,8 @@
 ### Loading required packages
 
-library(fda)
-library(splines2)
-library(RGeode)
+# library(fda)
+# library(splines2)
+# library(RGeode)
 
 ### Function to generate spline information
 
