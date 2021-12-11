@@ -19,31 +19,23 @@ get_initial_parameter(
 
 \item{zobs}{a \eqn{n x q} matrix where q is the number of baseline scalar covariates}
 
-\item{time}{zzzz}
+\item{time}{is a vector of length \eqn{\sum_{k = 1}^{p}|t_k|} containing observation time points for all samples and p functional covariates. It is concatenated from covariate to covaiate and sorted within each covariate.}
 
-\item{numk}{zzxxxx}
+\item{numk}{number of principal components, an integer}
 
-\item{nknots}{jjhg}
+\item{nknots}{number of quantile based knots specified to generate spline information, should be an integer value}
 
-\item{tolCPV}{kdodjk}
+\item{tolCPV}{tolerance limit, a floating point number between o and 1, default is set to be at 0.9}
 
-\item{useAT}{higag}
+\item{useAT}{a boolean, by default it is set to FALSE}
 }
 \value{
-
+a list of model informations and initial parameter estimates such as number of principal components(fscore), estimate of baseline coefficients(zcoef), degree of spline function used(degree), estimated spline basis coefficients(scoef), spline bases(sbasis).
 }
 \description{
-Functional Bayesian Network
+Outputs model information and initial parameter estimates. One important estimate is the number of functional principal components which is a key parameter for subsequent inference. Current method is based on singular value decomposition of the imputed matrix, which stretches the sample and functional covariate dimension, therefore ignores dependence between functional covariates. We suggest run several choices of number of principal components near the SVD estimate through the specification of parameter numk and choose the best one with some information criterions.
 }
 \examples{
-#install.packages("rmutil")
-#install.packages("orthogonalsplinebasis")
-#install.packages("igraph")
-#install.packages("splines")
-#library(rmutil)
-#library(orthogonalsplinebasis)
-#library(igraph)
-#library(splines)
 require(rmutil); require(orthogonalsplinebasis); require(igraph); require(splines)
 
 numx = 500 # Number of sample points

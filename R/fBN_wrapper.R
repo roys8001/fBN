@@ -1,28 +1,23 @@
 #' Functional Bayesian Network
 #'
+#' Outputs model information and initial parameter estimates. One important estimate is the number of functional principal components which is a key parameter for subsequent inference. Current method is based on singular value decomposition of the imputed matrix, which stretches the sample and functional covariate dimension, therefore ignores dependence between functional covariates. We suggest run several choices of number of principal components near the SVD estimate through the specification of parameter numk and choose the best one with some information criterions.
+#'
 #' @param xobs a \eqn{n x |tobs|} matrix where n is the number of samples. Its (i, j)the element indicates the discrete observation for functional covariate k at time point \eqn{t^{h}_k} of sample i if \eqn{j = \sum_{l = 1}^{k - 1}|t_l| + h} according to the arrangement of tobs. Missing values are allowed and specified as NaN.
 #' @param zobs a \eqn{n x q} matrix where q is the number of baseline scalar covariates
-#' @param time zzzz
-#' @param numk zzxxxx
-#' @param nknots jjhg
-#' @param tolCPV kdodjk
-#' @param useAT higag
+#' @param time is a vector of length \eqn{\sum_{k = 1}^{p}|t_k|} containing observation time points for all samples and p functional covariates. It is concatenated from covariate to covaiate and sorted within each covariate.
+#' @param numk number of principal components, an integer
+#' @param nknots number of quantile based knots specified to generate spline information, should be an integer value
+#' @param tolCPV tolerance limit, a floating point number between o and 1, default is set to be at 0.9
+#' @param useAT a boolean, by default it is set to FALSE
 #'
-#' @return
+#' @return a list of model informations and initial parameter estimates such as number of principal components(fscore), estimate of baseline coefficients(zcoef), degree of spline function used(degree), estimated spline basis coefficients(scoef), spline bases(sbasis).
 #' @importFrom stats splinefun lm quantile rgamma rnorm
 #' @importFrom fda create.bspline.basis create.monomial.basis eval.penalty inprod
 #' @importFrom splines bs
 #' @export
 #'
 #' @examples
-#' #install.packages("rmutil")
-#' #install.packages("orthogonalsplinebasis")
-#' #install.packages("igraph")
-#' #install.packages("splines")
-#' #library(rmutil)
-#' #library(orthogonalsplinebasis)
-#' #library(igraph)
-#' #library(splines)
+
 #' require(rmutil); require(orthogonalsplinebasis); require(igraph); require(splines)
 #'
 #' numx = 500 # Number of sample points
